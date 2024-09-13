@@ -1,6 +1,12 @@
 package com.aitripplanner.AiTripPlanner.Authentication.Response;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class AuthResponse {
+    // Getters and Setters
     private String token;
     private String username;
 
@@ -9,20 +15,4 @@ public class AuthResponse {
         this.username = username;
     }
 
-    // Getters and Setters
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
 }

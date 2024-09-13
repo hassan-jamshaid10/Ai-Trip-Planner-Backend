@@ -1,5 +1,9 @@
 package com.aitripplanner.AiTripPlanner.Controller;
+
+import com.aitripplanner.AiTripPlanner.Entites.BookingRecommendation;
 import com.aitripplanner.AiTripPlanner.Entites.Trip;
+import com.aitripplanner.AiTripPlanner.Services.BookingRecommendationService;
+import com.aitripplanner.AiTripPlanner.Services.GeminiService;
 import com.aitripplanner.AiTripPlanner.Services.TripService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,12 @@ public class TripController {
 
     @Autowired
     private TripService tripService;
+
+    @Autowired
+    private BookingRecommendationService bookingRecommendationService;
+
+    @Autowired
+    private GeminiService geminiService;
 
     @PostMapping
     public ResponseEntity<Trip> createTrip(@RequestBody Trip trip) {
@@ -47,5 +57,17 @@ public class TripController {
     public ResponseEntity<Void> deleteTrip(@PathVariable Integer id) {
         tripService.deleteTrip(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // New Endpoint: Get AI Recommendations for Bookings
+    @GetMapping("/{id}/recommendations")
+    public ResponseEntity<List<BookingRecommendation>> getAIRecommendations(@PathVariable Integer id) {
+        Optional<Trip> trip = tripService.getTripById(id);
+        if (trip.isPresent()) {
+            List<BookingRecommendation> recommendations = bookingRecommendationService.getRecommendationsForTrip(id);
+            return ResponseEntity.ok(recommendations);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
