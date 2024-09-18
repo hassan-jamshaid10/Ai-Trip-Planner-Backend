@@ -33,7 +33,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers("/api/auth/**").permitAll() // Allow auth routes without authentication
+                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/trips/**").authenticated()
+                                .requestMatchers("/api/booking-recommendations/**").authenticated()
+                                .requestMatchers("/api/activities/**").authenticated()
+                                .requestMatchers("/api/bookings/**").authenticated()
+                                .requestMatchers("/api/destinations/**").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

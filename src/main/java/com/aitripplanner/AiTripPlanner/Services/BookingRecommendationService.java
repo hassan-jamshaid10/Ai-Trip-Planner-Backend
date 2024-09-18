@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BookingRecommendationService {
@@ -16,31 +17,37 @@ public class BookingRecommendationService {
     private BookingRecommendationRepository bookingRecommendationRepository;
 
     @Autowired
+    private TripService tripService;
+
+    @Autowired
+    private BookingService bookingService;
+
+    @Autowired
     private GeminiService geminiService;
 
+    /**
+     * Get booking recommendations for a given trip.
+     *
+     * @param tripId The ID of the trip for which recommendations are requested.
+     * @return A list of booking recommendations.
+     */
     public List<BookingRecommendation> getRecommendationsForTrip(Integer tripId) {
-        // Get the trip details from TripService or repository
-        // Assuming you have a method to get Trip by ID
-        Trip trip = getTripById(tripId);  // You should implement this method
-        // Get booking details as needed
-        Booking booking = getBookingForTrip(tripId);  // You should implement this method
+        // Retrieve the trip details
+        Optional<Trip> tripOptional = tripService.getTripById(tripId);
+        if (tripOptional.isEmpty()) {
+            throw new IllegalArgumentException("Trip with ID " + tripId + " not found");
+        }
+        Trip trip = tripOptional.get();
+
+        // Retrieve booking details for the trip
+        List<Booking> bookings = bookingService.getBookingsForTrip(tripId);
 
         // Call GeminiService to get recommendations
-        List<BookingRecommendation> recommendations = geminiService.getRecommendations(trip, booking);
+        List<BookingRecommendation> recommendations = geminiService.getRecommendations(trip, (Booking) bookings);
 
         // Optionally save recommendations to the database
         bookingRecommendationRepository.saveAll(recommendations);
+
         return recommendations;
-    }
-
-    // Stub methods for demonstration; implement these methods as needed
-    private Trip getTripById(Integer tripId) {
-        // Retrieve Trip from TripService or repository
-        return new Trip();  // Replace with actual implementation
-    }
-
-    private Booking getBookingForTrip(Integer tripId) {
-        // Retrieve Booking related to the Trip
-        return new Booking();  // Replace with actual implementation
     }
 }

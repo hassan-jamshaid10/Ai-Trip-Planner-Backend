@@ -60,14 +60,16 @@ public class TripController {
     }
 
     // New Endpoint: Get AI Recommendations for Bookings
+    // Example of returning a proper error message for unauthorized or forbidden access
     @GetMapping("/{id}/recommendations")
-    public ResponseEntity<List<BookingRecommendation>> getAIRecommendations(@PathVariable Integer id) {
+    public ResponseEntity<?> getAIRecommendations(@PathVariable Integer id) {
         Optional<Trip> trip = tripService.getTripById(id);
         if (trip.isPresent()) {
             List<BookingRecommendation> recommendations = bookingRecommendationService.getRecommendationsForTrip(id);
             return ResponseEntity.ok(recommendations);
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found");
         }
     }
+
 }
