@@ -1,6 +1,5 @@
 package com.aitripplanner.AiTripPlanner.Services;
 
-
 import com.aitripplanner.AiTripPlanner.Entites.User;
 import com.aitripplanner.AiTripPlanner.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +18,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getUsername())
-                .password(user.getPasswordHash())
-                .roles("USER") // Set roles if applicable
+
+        return org.springframework.security.core.userdetails.User.withUsername(user.getUsername())
+                .password(user.getPassword())
+                .authorities("ROLE_USER") // Add roles or authorities as required
                 .build();
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
     }
 }

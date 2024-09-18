@@ -1,4 +1,5 @@
 package com.aitripplanner.AiTripPlanner.Entites;
+
 import lombok.*;
 import jakarta.persistence.*;
 import java.util.List;
@@ -19,12 +20,12 @@ public class User {
 
     private String email;
 
-    @Column(name = "password_hash")
-    private String passwordHash;
+    private String password;
 
     @ElementCollection
     private List<String> preferences;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Trip> trips;
+
 }

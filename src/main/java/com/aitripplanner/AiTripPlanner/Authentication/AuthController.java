@@ -5,7 +5,6 @@ import com.aitripplanner.AiTripPlanner.Authentication.Request.RegisterRequest;
 import com.aitripplanner.AiTripPlanner.Authentication.Response.AuthResponse;
 import com.aitripplanner.AiTripPlanner.Services.UserService;
 import com.aitripplanner.AiTripPlanner.Util.JwtTokenUtil;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,7 +43,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody RegisterRequest registerRequest) {
-        userService.registerNewUser(registerRequest);
+        userService.registerNewUser(registerRequest.getUsername(), registerRequest.getEmail(), registerRequest.getPassword());
         return ResponseEntity.ok("User registered successfully");
     }
 }
