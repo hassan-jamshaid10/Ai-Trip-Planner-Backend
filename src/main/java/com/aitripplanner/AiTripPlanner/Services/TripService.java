@@ -1,3 +1,4 @@
+
 package com.aitripplanner.AiTripPlanner.Services;
 
 import com.aitripplanner.AiTripPlanner.Entites.Trip;
