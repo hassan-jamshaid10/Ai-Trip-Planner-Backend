@@ -4,7 +4,6 @@ import com.aitripplanner.AiTripPlanner.Entites.Booking;
 import com.aitripplanner.AiTripPlanner.Entites.BookingRecommendation;
 import com.aitripplanner.AiTripPlanner.Entites.Trip;
 import com.aitripplanner.AiTripPlanner.Services.BookingRecommendationService;
-import com.aitripplanner.AiTripPlanner.Services.GeminiService;
 import com.aitripplanner.AiTripPlanner.Services.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,9 +23,6 @@ public class TripController {
     @Autowired
     private BookingRecommendationService bookingRecommendationService;
 
-    @Autowired
-    private GeminiService geminiService;
-
     // Create a new Trip
     @PostMapping
     public ResponseEntity<Trip> createTrip(@RequestBody Trip trip) {
@@ -39,8 +35,7 @@ public class TripController {
     public ResponseEntity<Trip> getTripById(@PathVariable Integer id) {
         Optional<Trip> trip = tripService.getTripById(id);
         return trip.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(null));
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     // Get all Trips
@@ -65,28 +60,29 @@ public class TripController {
         return ResponseEntity.noContent().build();
     }
 
-    // Get AI-based Booking Recommendations for a Trip
-    @GetMapping("/{id}/recommendations")
-    public ResponseEntity<?> getAIRecommendations(@PathVariable Integer id) {
-        Optional<Trip> trip = tripService.getTripById(id);
-        if (trip.isPresent()) {
-            Trip existingTrip = trip.get();
-
-            // Assuming the booking service or entity is providing current bookings for the trip
-            List<Booking> bookings = existingTrip.getBookings(); // Modify this if you use a separate service for booking
-            if (bookings.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No bookings found for this trip");
-            }
-
-            // Assuming the first booking is sent for AI recommendation (customize as needed)
-            Booking booking = bookings.get(0);
-
-            // Call the AI service for recommendations
-            List<BookingRecommendation> recommendations = geminiService.getRecommendations(existingTrip, booking);
-            return ResponseEntity.ok(recommendations);
-
+    // Create a Booking Recommendation for a Trip
+    @PostMapping("/{tripId}/recommendations")
+    public ResponseEntity<BookingRecommendation> createRecommendation(@PathVariable Integer tripId,
+                                                                      @RequestBody BookingRecommendation recommendation) {
+        // Fetch the Trip object using tripId
+        Optional<Trip> tripOptional = tripService.getTripById(tripId);
+        if (tripOptional.isPresent()) {
+            recommendation.setTrip(tripOptional.get()); // Set the Trip object in the BookingRecommendation
+            BookingRecommendation createdRecommendation = bookingRecommendationService.createRecommendation(recommendation);
+            return new ResponseEntity<>(createdRecommendation, HttpStatus.CREATED);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Return 404 if Trip not found
+        }
+    }
+
+    // Delete a Booking Recommendation by ID
+    @DeleteMapping("/{tripId}/recommendations/{recommendationId}")
+    public ResponseEntity<Void> deleteRecommendation(@PathVariable Integer tripId, @PathVariable Integer recommendationId) {
+        boolean isDeleted = bookingRecommendationService.deleteRecommendation(recommendationId);
+        if (isDeleted) {
+            return ResponseEntity.noContent().build(); // Return 204 No Content if deletion was successful
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Return 404 if not found
         }
     }
 }
