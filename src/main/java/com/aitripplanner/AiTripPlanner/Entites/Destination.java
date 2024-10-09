@@ -31,4 +31,5 @@ public class Destination {
 
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Activity> activities;
+
 }

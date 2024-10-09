@@ -1,5 +1,6 @@
 package com.aitripplanner.AiTripPlanner;
 
+
 import com.aitripplanner.AiTripPlanner.Entites.User;
 import com.aitripplanner.AiTripPlanner.Repository.UserRepository;
 import com.aitripplanner.AiTripPlanner.Services.UserService;
@@ -10,14 +11,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class UserServiceTest {
-
-    @InjectMocks
-    private UserService userService;
 
     @Mock
     private UserRepository userRepository;
@@ -25,58 +24,84 @@ class UserServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    private User user;
+    @InjectMocks
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        user = new User();
-        user.setUsername("testuser");
-        user.setEmail("testuser@example.com");
-        user.setPassword("password");
+        MockitoAnnotations.openMocks(this);  // Initializes @Mock and @InjectMocks
     }
 
     @Test
-    void registerNewUser_shouldSaveUser() {
+    void testRegisterNewUser() {
         // Arrange
-        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
+        String username = "testUser";
+        String email = "test@example.com";
+        String password = "password";
+        String encodedPassword = "encodedPassword";
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(encodedPassword);
+
+        // Mock password encoder behavior
+        when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
+
+        // Mock repository save behavior
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         // Act
-        User registeredUser = userService.registerNewUser("testuser", "testuser@example.com", "password");
+        User registeredUser = userService.registerNewUser(username, email, password);
 
         // Assert
         assertNotNull(registeredUser);
-        assertEquals("testuser", registeredUser.getUsername());
-        assertEquals("testuser@example.com", registeredUser.getEmail());
-        assertEquals("encodedPassword", registeredUser.getPassword());
-        verify(passwordEncoder).encode("password");
-        verify(userRepository).save(any(User.class));
+        assertEquals(username, registeredUser.getUsername());
+        assertEquals(email, registeredUser.getEmail());
+        assertEquals(encodedPassword, registeredUser.getPassword());
+
+        // Verify the interactions
+        verify(passwordEncoder, times(1)).encode(password);
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
-    void findByUsername_shouldReturnUser() {
+    void testFindByUsername_UserFound() {
         // Arrange
-        when(userRepository.findByUsername("testuser")).thenReturn(java.util.Optional.of(user));
+        String username = "testUser";
+        User user = new User();
+        user.setUsername(username);
+
+        // Mock repository findByUsername behavior
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         // Act
-        User foundUser = userService.findByUsername("testuser");
+        User foundUser = userService.findByUsername(username);
 
         // Assert
         assertNotNull(foundUser);
-        assertEquals("testuser", foundUser.getUsername());
-        verify(userRepository).findByUsername("testuser");
+        assertEquals(username, foundUser.getUsername());
+
+        // Verify the interactions
+        verify(userRepository, times(1)).findByUsername(username);
     }
 
     @Test
-    void findByUsername_shouldThrowException_whenUserNotFound() {
+    void testFindByUsername_UserNotFound() {
         // Arrange
-        when(userRepository.findByUsername("unknownuser")).thenReturn(java.util.Optional.empty());
+        String username = "nonExistentUser";
+
+        // Mock repository findByUsername behavior
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            userService.findByUsername("unknownuser");
+            userService.findByUsername(username);
         });
-        assertEquals("User not found with username: unknownuser", exception.getMessage());
+
+        assertEquals("User not found with username: " + username, exception.getMessage());
+
+        // Verify the interactions
+        verify(userRepository, times(1)).findByUsername(username);
     }
 }
