@@ -42,6 +42,7 @@ public class BookingController {
         Booking updatedBooking = bookingService.updateBooking(id, booking);
         return updatedBooking != null ? ResponseEntity.ok(updatedBooking)
                 : ResponseEntity.notFound().build();
+
     }
 
     @DeleteMapping("/{id}")
